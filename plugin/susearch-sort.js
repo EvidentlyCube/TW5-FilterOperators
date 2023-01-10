@@ -12,40 +12,51 @@ Smart sorting of search results
 	/*global $tw: false */
 	"use strict";
 
-	exports['susearch-sort'] = function(source, operator, options) {
+	exports['susearch-sort'] = function(source, operator) {
 		const query = operator.operand || '';
 		const suffixes = (operator.suffixes || []);
-		const fieldName = (suffixes[0] || [])[0] || 'title';
+		const optionFlags = suffixes[1] || [];
+		const options = {
+			field: (suffixes[0] || [])[0] || 'title',
+			textOnly: optionFlags.indexOf('text-only') !== -1
+		};
+
 		const records = [];
 
 		source(function(tiddler, title) {
 			records.push(tiddler ? tiddler.fields : {title: title});
 		});
 
-		return susearchSort(records, query, fieldName).map(record => record.title);
+		return susearchSort(records, query, options).map(record => record.title);
 	};
 
 
 	const SIMPLIFY_REGEXP = /[^a-z0-9_-]/ig;
-	/**
-	 * @param {object} records
-	 * @param {string} query
-	 * @param {string} sortField
-	 * @returns
-	 */
-	function susearchSort(records, query, sortField) {
+	const TEXT_ONLY_REGEXPS = [
+		[/\\define\s+([^(\s]+)\([^\)]*\)(\r?\n(\s|\S)*?\end|.+?(\r?\n|$))/ig, ''], // Macro definitions
+		[/\s*\\(?:\s|\S)+?\n([^\\\r\n])/ig, '$1'], // Arbitrary pragmas at the start
+		[/\[img[^\]]*\]\]/ig, ''], // Images
+		[/^@@.*?(\r?\n|$)/igm, ''], // Styles
+		[/^\$\$\$.*?(\r?\n|$)/igm, ''], // Typed block
+		[/\{\{\{[^\}]*\}\}\}/ig, ''], // Filter invocations
+		[/\{\{[^\}]*\}\}/ig, ''], // Transclusions
+		[/\[\[([^\]]+(?=\|))?\|?[^\]]+\]\]/ig, '$1'], // Links
+		[/<<[^>]*>>/ig, ''], // Macro invocations
+		[/<\/?[^>]*>/ig, ''] // HTML Tags
+	];
+	function susearchSort(records, query, options) {
 		const sanitizedQuery = query.replace(/\s+/g, ' ').trim();
 		const words = sanitizedQuery.split(' ').filter(word => word);
 		const simplifiedWords = sanitizedQuery.replace(SIMPLIFY_REGEXP, '').split(' ').filter(word => word);
 
 		if (words.length === 0) {
-			return textSort(records, sortField);
+			return textSort(records, options.field);
 
 		} else if (words.length === 1) {
-			return sortInternal(records, sanitizedQuery, [], [], sortField);
+			return sortInternal(records, sanitizedQuery, [], [], options);
 
 		} else {
-			return sortInternal(records, sanitizedQuery, words, simplifiedWords, sortField);
+			return sortInternal(records, sanitizedQuery, words, simplifiedWords, options);
 		}
 	};
 
@@ -63,11 +74,11 @@ Smart sorting of search results
 		});
 	}
 
-	function sortInternal(records, query, words, simplifiedWords, sortField) {
+	function sortInternal(records, query, words, simplifiedWords, options) {
 		const fullQueryRegexps = [query, getRegexpsForPhrase(query)];
 		const wordsRegexps = words.map(word => [word, getRegexpsForPhrase(word)]);
 		const simplifiedWordsRegexps = simplifiedWords.map(word => [word, getRegexpsForPhrase(word)]);
-		const scores = records.map(record => getScore(record, sortField, fullQueryRegexps, wordsRegexps, simplifiedWordsRegexps));
+		const scores = records.map(record => getScore(record, options, fullQueryRegexps, wordsRegexps, simplifiedWordsRegexps));
 
 		scores.sort(recordsSortCallback);
 
@@ -112,8 +123,14 @@ Smart sorting of search results
 			}
 		}
 
-		const sameCaseScore = left[3][0].localeCompare(right[3][0], { numeric: true, sensitivity: "base" });
-		return sameCaseScore || left[3][1].localeCompare(right[3][1], { numeric: true, sensitivity: "base" })
+		for (let i = 0; i < left[3].length; i++) {
+			const score = left[3][i].localeCompare(right[3][i], { numeric: true, sensitivity: "base" });
+			if (score !== 0) {
+				return score;
+			}
+		}
+
+		return 0;
 	}
 
 	function getRegexpsForPhrase(phrase) {
@@ -128,8 +145,9 @@ Smart sorting of search results
 		]
 	}
 
-	function getScore(record, sortField, fullQueryRegexp, wordsRegexps, simplifiedWordsRegexps) {
-		const field = record[sortField] || '';
+	function getScore(record, options, fullQueryRegexp, wordsRegexps, simplifiedWordsRegexps) {
+		const rawField = record[options.field] || '';
+		const field = prepareField(rawField, options);
 		const simplifiedField = field.replace(SIMPLIFY_REGEXP, '');
 		const fullQueryScore = getRegexpScore(field, fullQueryRegexp[0], fullQueryRegexp[1]);
 		const wordScores = wordsRegexps
@@ -145,7 +163,7 @@ Smart sorting of search results
 			fullQueryScore || [-1, -1, Number.MAX_SAFE_INTEGER], // Full query score match type
 			wordScores, // Word scores
 			simplifiedWordScores, // Word scores
-			[field.toLowerCase(), field], // Field
+			[field.toLowerCase(), field, rawField.toLowerCase(), rawField], // Field
 			record // Record
 		];
 	}
@@ -184,6 +202,13 @@ Smart sorting of search results
 		const matches = text.match(regexp);
 
 		return matches ? matches.length : 0;
+	}
+
+	function prepareField(field, options) {
+		if (options.textOnly) {
+			return TEXT_ONLY_REGEXPS.reduce((field, [regexp, replace]) => field.replace(regexp, replace), field);
+		}
+		return field;
 	}
 
 })();

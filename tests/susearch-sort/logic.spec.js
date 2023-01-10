@@ -1,5 +1,5 @@
 const assert = require('assert');
-const helpers = require('./helpers').helpers;
+const { runComplexCase, runSort, assertSort } = require('./helpers').helpers;
 
 global.$tw = {
 	utils: {
@@ -9,27 +9,27 @@ global.$tw = {
 	}
 }
 describe('susearch-sort empty query', () => {
-	helpers.complexCase('', ['a', 'b', 'test']);
+	runComplexCase('', ['a', 'b', 'test']);
 });
 
 describe('susearch-sort Single Phrase', () => {
 	describe('Prefer earlier to later', () => {
-		helpers.complexCase('test', ['test', '  test']);
+		runComplexCase('test', ['test', '  test']);
 	});
 	describe('Prefer full match to partial match', () => {
-		helpers.complexCase('test', ['test', 'testing']);
+		runComplexCase('test', ['test', 'testing']);
 	});
 	describe('Prefer partial match to mid-word match', () => {
-		helpers.complexCase('test', ['testing', 'untest']);
+		runComplexCase('test', ['testing', 'untest']);
 	});
 	describe('Prefer more matches over fewer match', () => {
-		helpers.complexCase('test', ['some test test', 'some test']);
+		runComplexCase('test', ['some test test', 'some test']);
 	});
 	describe('Prefer earlier match to later match', () => {
-		helpers.complexCase('test', ['four test', 'sevennn test']);
+		runComplexCase('test', ['four test', 'sevennn test']);
 	});
 	describe('Complex scenario', () => {
-		helpers.complexCase('test', [
+		runComplexCase('test', [
 			'test',
 			'testing',
 			'space test',
@@ -38,44 +38,147 @@ describe('susearch-sort Single Phrase', () => {
 		]);
 	});
 	describe('Sort alphabetically if query is empty', () => {
-		helpers.complexCase('', ['a', 'b', 'c', 'd']);
+		runComplexCase('', ['a', 'b', 'c', 'd']);
 	});
 	describe('Sort alphabetically if all else is equal', () => {
-		helpers.complexCase('test', ['a', 'b', 'c', 'd']);
+		runComplexCase('test', ['a', 'b', 'c', 'd']);
 	});
 	describe('Upper and lower case are equal unless the words are equal in which case lowercase first', () => {
-		helpers.complexCase('test', ['a', 'B', 'c', 'd', 'D']);
+		runComplexCase('test', ['a', 'B', 'c', 'd', 'D']);
 	});
 });
 describe('Multi word', () => {
 	describe('More matches is preferred', () => {
-		helpers.complexCase('foo bar baz', ['foobarbaz', 'barbaz', 'bazbar', 'foobar']);
+		runComplexCase('foo bar baz', ['foobarbaz', 'barbaz', 'bazbar', 'foobar']);
 	});
 	describe('Exact match is preferred', () => {
-		helpers.complexCase('duck ate pizza', ['My duck ate pizza but she is fine', 'Duck pizza ate']);
+		runComplexCase('duck ate pizza', ['My duck ate pizza but she is fine', 'Duck pizza ate']);
 	});
 	describe('Word order in query does not matter, word score matters', () => {
-		helpers.complexCase('foo bar baz', ['baz', 'the bar', 'some fooing']);
+		runComplexCase('foo bar baz', ['baz', 'the bar', 'some fooing']);
 	});
 	describe('Words consisting of only special characters will also match', () => {
-		helpers.complexCase('$@$', ['$@$', 'text with $@$', 'abc']);
+		runComplexCase('$@$', ['$@$', 'text with $@$', 'abc']);
 	});
 	describe('Full Match > match with special chars > match without special chars', () => {
-		helpers.complexCase("foo b@r $", ['foo b@r $', 'b@r', 'test with $', 'aa', 'bb']);
+		runComplexCase("foo b@r $", ['foo b@r $', 'b@r', 'test with $', 'aa', 'bb']);
 	});
 	describe('Words ignore special characters', () => {
-		helpers.complexCase("'foo'$# @#@&bar)", ['foo bar is the best baz', 'aaa', 'zzz']);
+		runComplexCase("'foo'$# @#@&bar)", ['foo bar is the best baz', 'aaa', 'zzz']);
+	});
+});
+describe('susearch-sort text-only flag', () => {
+	describe('HTML Tags -> Include by default', () => {
+		runComplexCase('test', ['Z <a href="test">', 'A']);
+	});
+	describe('HTML Tags -> Exclude in `text-only`', () => {
+		runComplexCase('test', ['A', 'Z <a href="test">'], ['text-only']);
+	});
+	describe('Macro invocations -> Include by default', () => {
+		runComplexCase('test', ['Z <<test>>', 'A']);
+	});
+	describe('Macro Invocations -> Exclude in `text-only`', () => {
+		runComplexCase('test', ['A', 'Z <<test>>'], ['text-only']);
+	});
+	describe('Filter invocations -> Include by default', () => {
+		runComplexCase('test', ['Z {{{test}}}', 'A']);
+	});
+	describe('Filter Invocations -> Exclude in `text-only`', () => {
+		runComplexCase('test', ['A', 'Z {{{test}}}'], ['text-only']);
+	});
+	describe('Transclusions -> Include by default', () => {
+		runComplexCase('test', ['Z {{test}}', 'A']);
+	});
+	describe('Transclusions -> Exclude in `text-only`', () => {
+		runComplexCase('test', ['A', 'Z {{test}}'], ['text-only']);
+	});
+	describe('Images -> Include by default', () => {
+		runComplexCase('test', ['Z [img class="test" [test.jpg]]', 'A']);
+	});
+	describe('Images -> Exclude in `text-only`', () => {
+		runComplexCase('test', ['A', 'Z [img class="test" [test.jpg]]'], ['text-only']);
+	});
+	const MACRO_DEF_MULTILINE_N = "\\define a(a b c)\ntest\n\\end\nB";
+	const MACRO_DEF_MULTILINE_RN = "\\define bbb(a b c)\r\ntest\r\n\\end\r\nC";
+	const MACRO_DEF_SINGLELINE = "\\define ccccc(a b c) test\r\nD";
+	describe('Macro Definitions -> Include by default', () => {
+		runComplexCase('test', [
+			MACRO_DEF_MULTILINE_N,
+			MACRO_DEF_MULTILINE_RN,
+			MACRO_DEF_SINGLELINE,
+			"\nA"
+		]);
+	});
+	describe('Macro Definitions -> Exclude in `text-only`', () => {
+		runComplexCase('test', [
+			"\nA",
+			MACRO_DEF_MULTILINE_N,
+			MACRO_DEF_MULTILINE_RN,
+			MACRO_DEF_SINGLELINE
+		], ['text-only']);
+	});
+	describe('Arbitrary Pragmas at the start -> Include by default', () => {
+		runComplexCase('test', ["\\test\r\nb", "\\bb test\r\nb", 'A']);
+	});
+	describe('Arbitrary Pragmas at the start -> Exclude in `text-only`', () => {
+		runComplexCase('test', ['A', "\\bb test\r\nb", "\\test\r\nb"], ['text-only']);
+	});
+	describe('Styles -> Include by default', () => {
+		runComplexCase('test', ["@@.test\nb", 'A']);
+	});
+	describe('Styles -> Exclude in `text-only`', () => {
+		runComplexCase('test', ['A', "@@.test\nb"], ['text-only']);
+	});
+	describe('Typed blocks -> Include by default', () => {
+		runComplexCase('test', ["$$$application/test\nb", 'A']);
+	});
+	describe('Typed blocks -> Exclude in `text-only`', () => {
+		runComplexCase('test', ['A', "$$$application/test\nb"], ['text-only']);
+	});
+	describe('Manual link target -> Include by default', () => {
+		runComplexCase('test', ['[[test|else]]', "[[Content|test]] b", 'A']);
+	});
+	describe('Manual link target -> Exclude in `text-only`', () => {
+		runComplexCase('test', ['[[test|else]]', 'A', "[[Content|test]] b"], ['text-only']);
+	});
+	const ALL_IN_ONE = `\\test
+\\whitespace test
+\\define test(a)
+test
+\\end
+\\define test2(test) test
+
+<a href="test">contents</a>
+<<test>>
+{{test}}
+{{{test}}}
+@@.test
+styled
+@@
+$$$application/test
+content
+$$$
+[img test=test[test]]
+[[link|test]]
+[[test]]
+`;
+	const VERY_LATE_TEST = ' '.repeat(5000) + 'test';
+	describe('Big check -> Include by default', () => {
+		runComplexCase('test', [ALL_IN_ONE, VERY_LATE_TEST]);
+	});
+	describe('Typed blocks -> Exclude in `text-only`', () => {
+		runComplexCase('test', [VERY_LATE_TEST, ALL_IN_ONE], ['text-only']);
 	});
 });
 describe('susearch-sort special cases', () => {
-	const toTiddlers = titles => titles.map(title => ({fields: {title: title}}));
+	const toTiddlers = titles => titles.map(title => ({ fields: { title: title } }));
 
 	it("Empty source gives empty results", () => {
-		const results = helpers.runSort([], '', 'title');
+		const results = runSort([], '', 'title');
 		assert.deepStrictEqual(results, []);
 	});
 	it("Missing field is not sorted", () => {
-		const results = helpers.runSort(toTiddlers(['c', 'b', 'a']), '', 'missing field');
-		helpers.assertSort(results, ['c', 'b', 'a']);
+		const results = runSort(toTiddlers(['c', 'b', 'a']), '', 'missing field');
+		assertSort(results, ['c', 'b', 'a']);
 	});
 });

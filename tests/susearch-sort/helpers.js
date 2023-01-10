@@ -4,19 +4,32 @@ const filter = require('../../plugin/susearch-sort')['susearch-sort'];
 const toTitle = (text, index) => `ID:${index} -- ${text}`;
 const toTiddler = (title, text) => ({fields: {title, text}});
 const helpers = {
-	complexCase(query, expectedTitles) {
+	runComplexCase(query, expectedTitles, options) {
 		it("Title field", () => {
-			runCase(query, 'title', expectedTitles.map(title => toTiddler(title)), expectedTitles);
+			runCase(
+				query,
+				'title',
+				expectedTitles.map(title => toTiddler(title)),
+				expectedTitles,
+				options
+			);
 		});
 		it("Title field, reversed input", () => {
-			runCase(query, 'title', expectedTitles.map(title => toTiddler(title)).reverse(), expectedTitles);
+			runCase(
+				query,
+				'title',
+				expectedTitles.map(title => toTiddler(title)).reverse(),
+				expectedTitles,
+				options
+			);
 		});
 		it("Text field", () => {
 			runCase(
 				query,
 				'text',
 				expectedTitles.map((title, index) => toTiddler(toTitle(title, index), title)),
-				expectedTitles.map(toTitle)
+				expectedTitles.map(toTitle),
+				options
 			);
 		});
 		it("Text field, reversed input", () => {
@@ -24,12 +37,13 @@ const helpers = {
 				query,
 				'text',
 				expectedTitles.map((title, index) => toTiddler(toTitle(title, index), title)).reverse(),
-				expectedTitles.map(toTitle)
+				expectedTitles.map(toTitle),
+				options
 			);
 		});
 	},
 
-	runSort(tiddlers, query, sortField) {
+	runSort(tiddlers, query, sortField, options) {
 		return filter(
 			callback =>{
 				for (const tiddler of tiddlers) {
@@ -37,8 +51,11 @@ const helpers = {
 				}
 			},
 			{
-				operand:query,
-				suffixes: [[sortField]]
+				operand: query,
+				suffixes: [
+					[sortField],
+					options || []
+				]
 			}
 		);
 	},
@@ -48,8 +65,8 @@ const helpers = {
 	}
 }
 
-function runCase(query, field, testData, expectedTitles) {
-	const result = helpers.runSort(testData, query, field);
+function runCase(query, field, testData, expectedTitles, options) {
+	const result = helpers.runSort(testData, query, field, options);
 
 	helpers.assertSort(result, expectedTitles);
 }

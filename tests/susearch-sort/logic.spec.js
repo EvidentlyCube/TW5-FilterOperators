@@ -1,5 +1,4 @@
 const assert = require('assert');
-const logic = require('../../plugin/susearch-sort-logic');
 const helpers = require('./helpers').helpers;
 
 global.$tw = {
@@ -10,7 +9,7 @@ global.$tw = {
 	}
 }
 describe('susearch-sort empty query', () => {
-	helpers.complexCase('', ['a', '  test']);
+	helpers.complexCase('', ['a', 'b', 'test']);
 });
 
 describe('susearch-sort Single Phrase', () => {
@@ -66,5 +65,17 @@ describe('Multi word', () => {
 	});
 	describe('Words ignore special characters', () => {
 		helpers.complexCase("'foo'$# @#@&bar)", ['foo bar is the best baz', 'aaa', 'zzz']);
+	});
+});
+describe('susearch-sort special cases', () => {
+	const toTiddlers = titles => titles.map(title => ({fields: {title: title}}));
+
+	it("Empty source gives empty results", () => {
+		const results = helpers.runSort([], '', 'title');
+		assert.deepStrictEqual(results, []);
+	});
+	it("Missing field is not sorted", () => {
+		const results = helpers.runSort(toTiddlers(['c', 'b', 'a']), '', 'missing field');
+		helpers.assertSort(results, ['c', 'b', 'a']);
 	});
 });

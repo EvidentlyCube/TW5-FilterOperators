@@ -6,7 +6,7 @@ module-type: filteroperator
 Smart sorting of search results
 
 \*/
-(function(){
+(function(require){
 
 	/*jslint node: true, browser: true */
 	/*global $tw: false */
@@ -30,20 +30,8 @@ Smart sorting of search results
 		return susearchSort(records, query, options).map(record => record.title);
 	};
 
-
 	const SIMPLIFY_REGEXP = /[^a-z0-9_-]/ig;
-	const TEXT_ONLY_REGEXPS = [
-		[/\\define\s+([^(\s]+)\([^\)]*\)(\r?\n(\s|\S)*?\end|.+?(\r?\n|$))/ig, ''], // Macro definitions
-		[/\s*\\(?:\s|\S)+?\n([^\\\r\n])/ig, '$1'], // Arbitrary pragmas at the start
-		[/\[img[^\]]*\]\]/ig, ''], // Images
-		[/^@@.*?(\r?\n|$)/igm, ''], // Styles
-		[/^\$\$\$.*?(\r?\n|$)/igm, ''], // Typed block
-		[/\{\{\{[^\}]*\}\}\}/ig, ''], // Filter invocations
-		[/\{\{[^\}]*\}\}/ig, ''], // Transclusions
-		[/\[\[([^\]]+(?=\|))?\|?[^\]]+\]\]/ig, '$1'], // Links
-		[/<<[^>]*>>/ig, ''], // Macro invocations
-		[/<\/?[^>]*>/ig, ''] // HTML Tags
-	];
+	const TEXT_ONLY_REGEXPS = require('$:/plugins/EvidentlyCube/ExtraOperators/common.js').TEXT_ONLY_REGEXPS;
 	function susearchSort(records, query, options) {
 		const sanitizedQuery = query.replace(/\s+/g, ' ').trim();
 		const words = sanitizedQuery.split(' ').filter(word => word);
@@ -211,4 +199,4 @@ Smart sorting of search results
 		return field;
 	}
 
-})();
+})(typeof global !== 'undefined' ? global.testRequire : require);

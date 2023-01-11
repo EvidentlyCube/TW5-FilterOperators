@@ -12,6 +12,8 @@ Smart sorting of search results
 	/*global $tw: false */
 	"use strict";
 
+	const common = require('$:/plugins/EvidentlyCube/ExtraOperators/common.js');
+
 	exports['susearch-sort'] = function(source, operator) {
 		const query = operator.operand || '';
 		const suffixes = (operator.suffixes || []);
@@ -30,12 +32,10 @@ Smart sorting of search results
 		return susearchSort(records, query, options).map(record => record.title);
 	};
 
-	const SIMPLIFY_REGEXP = /[^a-z0-9_-]/ig;
-	const TEXT_ONLY_REGEXPS = require('$:/plugins/EvidentlyCube/ExtraOperators/common.js').TEXT_ONLY_REGEXPS;
 	function susearchSort(records, query, options) {
 		const sanitizedQuery = query.replace(/\s+/g, ' ').trim();
 		const words = sanitizedQuery.split(' ').filter(word => word);
-		const simplifiedWords = sanitizedQuery.replace(SIMPLIFY_REGEXP, '').split(' ').filter(word => word);
+		const simplifiedWords = sanitizedQuery.replace(common.SIMPLIFY_REGEXP, '').split(' ').filter(word => word);
 
 		if (words.length === 0) {
 			return textSort(records, options.field);
@@ -63,9 +63,9 @@ Smart sorting of search results
 	}
 
 	function sortInternal(records, query, words, simplifiedWords, options) {
-		const fullQueryRegexps = [query, getRegexpsForPhrase(query)];
-		const wordsRegexps = words.map(word => [word, getRegexpsForPhrase(word)]);
-		const simplifiedWordsRegexps = simplifiedWords.map(word => [word, getRegexpsForPhrase(word)]);
+		const fullQueryRegexps = [query, common.getRegexpsForPhrase(query)];
+		const wordsRegexps = words.map(word => [word, common.getRegexpsForPhrase(word)]);
+		const simplifiedWordsRegexps = simplifiedWords.map(word => [word, common.getRegexpsForPhrase(word)]);
 		const scores = records.map(record => getScore(record, options, fullQueryRegexps, wordsRegexps, simplifiedWordsRegexps));
 
 		scores.sort(recordsSortCallback);
@@ -121,22 +121,10 @@ Smart sorting of search results
 		return 0;
 	}
 
-	function getRegexpsForPhrase(phrase) {
-		const escapedPhrase = $tw.utils.escapeRegExp(phrase);
-
-		return [
-			new RegExp(`^${escapedPhrase}\\b`, 'gi'),
-			new RegExp(`^${escapedPhrase}`, 'gi'),
-			new RegExp(`\\b${escapedPhrase}\\b`, 'gi'),
-			new RegExp(`\\b${escapedPhrase}`, 'gi'),
-			new RegExp(escapedPhrase, 'gi'),
-		]
-	}
-
 	function getScore(record, options, fullQueryRegexp, wordsRegexps, simplifiedWordsRegexps) {
 		const rawField = record[options.field] || '';
 		const field = prepareField(rawField, options);
-		const simplifiedField = field.replace(SIMPLIFY_REGEXP, '');
+		const simplifiedField = field.replace(common.SIMPLIFY_REGEXP, '');
 		const fullQueryScore = getRegexpScore(field, fullQueryRegexp[0], fullQueryRegexp[1]);
 		const wordScores = wordsRegexps
 			.map(r => getRegexpScore(field, r[0], r[1]))
@@ -194,7 +182,7 @@ Smart sorting of search results
 
 	function prepareField(field, options) {
 		if (options.textOnly) {
-			return TEXT_ONLY_REGEXPS.reduce((field, [regexp, replace]) => field.replace(regexp, replace), field);
+			return common.TEXT_ONLY_REGEXPS.reduce((field, [regexp, replace]) => field.replace(regexp, replace), field).trim();
 		}
 		return field;
 	}

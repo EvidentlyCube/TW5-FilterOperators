@@ -1,13 +1,6 @@
 const assert = require('assert');
 const { runComplexCase, runSearch, assertResults } = require('./helpers').helpers;
 
-global.$tw = {
-	utils: {
-		escapeRegExp(s) {
-			return s.replace(/[\-\/\\\^\$\*\+\?\.\(\)\|\[\]\{\}]/g, '\\$&');
-		}
-	}
-}
 describe('susearch empty query returns everything', () => {
 	runComplexCase('', ['', 'b', 'test'], []);
 });

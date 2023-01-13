@@ -1,37 +1,55 @@
+/* cSpell:disable */
+
 const assert = require('assert');
 const { runComplexCase, runSearch, assertResults } = require('./helpers').helpers;
 
-global.$tw = {
-	utils: {
-		escapeRegExp(s) {
-			return s.replace(/[\-\/\\\^\$\*\+\?\.\(\)\|\[\]\{\}]/g, '\\$&');
-		}
-	}
-}
 describe('susearch-mark simple cases', () => {
 	it('Mark full phrase', () => {
 		runComplexCase('much testing', 'much testing', '<mark>much testing</mark>');
 	});
-	xit('Mark individual words', () => {
-		runComplexCase('much testing', ['much', 'testing', 'testing is too much'], ['soup']);
+	it('Mark individual words', () => {
+		runComplexCase('much testing', 'testing much', '<mark>testing</mark> <mark>much</mark>');
+		runComplexCase('much testing', 'too much doing testing here', 'too <mark>much</mark> doing <mark>testing</mark> here');
 	});
-	xit('Mark words partially', () => {
-		runComplexCase('much testing', ['mucho', 'atesting', 'atestingo is too amucho'], ['soup']);
+	it('Mark parts of words', () => {
+		runComplexCase('to', 'toad burrito stork', '<mark>to</mark>ad burri<mark>to</mark> s<mark>to</mark>rk');
 	});
-	xit('Mark words with special characters', () => {
-		runComplexCase('$econd$', ['$econd$', 'I have a few $econd$ to spare'], ['soup']);
+	it('Mark special characters', () => {
+		runComplexCase('$$ @@', '$$ollars mail@@notmail', '<mark>$$</mark>ollars mail<mark>@@</mark>notmail');
 	});
-	xit('Mark words while trimming special characters', () => {
-		runComplexCase('$econd$', ['econd', '@econd@'], ['soup']);
+	it('Mark normal-special character mix', () => {
+		runComplexCase('$ollar$', '$ollar$', '<mark>$ollar$</mark>');
 	});
-	xit('Only special characters will also Mark', () => {
-		runComplexCase('$#@', ['$#@', '$#@@#$'], ['$@#']);
+	it('Mark without special characters', () => {
+		runComplexCase('$ollar$', 'collars', 'c<mark>ollar</mark>s');
 	});
-	xit('Search is case-insensitive', () => {
-		runComplexCase('TEST', ['test', 'TesT', 'TEST'], ['soup']);
+	it('Marking is case-insensitive', () => {
+		runComplexCase('TEST', 'test TesT TEST', '<mark>test</mark> <mark>TesT</mark> <mark>TEST</mark>');
 	});
 });
-xdescribe('susearch-mark text-only flag', () => {
+describe('susearch-mark mode: raw-strip', () => {
+	it('Marks everywhere indiscriminately', () => {
+		runComplexCase(
+			'test',
+			"\\define test() test\n"
+			 + '<test href="test">test</test>',
+			"\\define <mark>test</mark>() <mark>test</mark>\n"
+			 + '<<mark>test</mark> href="<mark>test</mark>"><mark>test</mark></<mark>test</mark>>'
+		);
+	});
+});
+describe('susearch-mark mode: wikify-strip', () => {
+	it('Parse wikitext into html, extract just the text and mark it', () => {
+		runComplexCase(
+			'test',
+			"\\define test() quack test duck\n"
+			 + '<test href="test">test</test> __test__ <<test>>',
+			 '<mark>test</mark> <mark>test</mark> quack <mark>test</mark> duck',
+			 ['wikify-strip']
+		);
+	})
+});
+xdescribe('susearch-mark mode: raw-strip', () => {
 	const mashup = (text, prefix="a", suffix="b") => {
 		const prefixes = ['', "\n", "\r\n", `${prefix}\n`, `${prefix}\r\n`];
 		const suffixes = ['', "\n", "\r\n", `\n${suffix}`, `\r\n${suffix}`];
@@ -40,11 +58,21 @@ xdescribe('susearch-mark text-only flag', () => {
 		}, [])
 	};
 
-	xit('HTML Tags -> Include by default', () => {
-		runComplexCase('test', ['test', ...mashup('<a href="test">')], []);
+	const runFlagged = (name, query, given, expectedNormal, expectedStripped, expectedHtmlified) => {
+		it(name, () => {
+			runComplexCase(query, given, expectedNormal, [], "Should've marked even wikitext");
+			runComplexCase(query, given, expectedStripped, ['raw-strip'], "Should've stripped all wikitext");
+			runComplexCase(query, given, expectedStripped, ['html-strip'], "Should've stripped all wikitext");
+			runComplexCase(query, given, expectedStripped, ['htmlify'], "Should've marked even wikitext");
+			runComplexCase('test', ['test'], mashup('<a href="test">'), ['text-only']);
+		});
+	}
+
+	xit('HTML Tags', () => {
+		runComplexCase('test', ['test', ...mashup('<a href="test">')], [], "");
+		runComplexCase('test', ['test'], mashup('<a href="test">'), ['text-only']);
 	});
 	xit('HTML Tags -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['test'], mashup('<a href="test">'), ['text-only']);
 	});
 	xit('Macro invocations -> Include by default', () => {
 		runComplexCase('test', ['test', ...mashup('<<test>>')], []);

@@ -1,13 +1,6 @@
 const assert = require('assert');
 const { runComplexCase, runSort, assertSort } = require('./helpers').helpers;
 
-global.$tw = {
-	utils: {
-		escapeRegExp(s) {
-			return s.replace(/[\-\/\\\^\$\*\+\?\.\(\)\|\[\]\{\}]/g, '\\$&');
-		}
-	}
-}
 describe('susearch-sort empty query', () => {
 	runComplexCase('', ['a', 'b', 'test']);
 });

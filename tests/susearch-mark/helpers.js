@@ -1,10 +1,8 @@
 const assert = require('assert');
 const filter = require('../../plugin/susearch-mark')['susearch-mark'];
 
-const toTitle = (text, index) => `ID:${index} -- ${text}`;
-const toTiddler = (title, text) => ({fields: {title, text}});
 const helpers = {
-	runComplexCase(query, given, then, options) {
+	runComplexCase(query, given, then, options, message) {
 		given = !Array.isArray(given) ? [given] : given;
 		then = !Array.isArray(then) ? [then] : then;
 
@@ -14,7 +12,7 @@ const helpers = {
 			options
 		);
 
-		helpers.assertResults(result, then);
+		helpers.assertResults(result, then, message);
 	},
 
 	runMark(tiddlers, query, options) {
@@ -29,6 +27,9 @@ const helpers = {
 				suffixes: [
 					options || []
 				]
+			},
+			{
+				wiki: global.$tw.wiki
 			}
 		);
 	},

@@ -22,7 +22,8 @@ Smart sorting of search results
 		[/\{\{[^\}]*\}\}/ig, ''], // Transclusions
 		[/\[\[([^\]]+(?=\|))?\|?[^\]]+\]\]/ig, '$1'], // Links
 		[/<<[^>]*>>/ig, ''], // Macro invocations
-		[/<\/?[^>]*>/ig, ''] // HTML Tags
+		[/<\/?[^>]*>/ig, ''], // HTML Tags
+		[/''|`|__|\/\/|^!+\s+|~~/mg, '']
 	];
 
 	exports.SIMPLIFY_REGEXP = /[^a-z0-9_-]/ig;

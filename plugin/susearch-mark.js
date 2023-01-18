@@ -19,18 +19,11 @@ Smart sorting of search results
 		const optionFlags = suffixes[0] || [];
 		const options = {
 			mode: extractMode(optionFlags),
-			wiki: opts.wiki
+			wiki: opts.wiki,
+			template: operator.operands[1] || '<mark>$1</mark>'
 		};
 
-		const sanitizedQuery = query.replace(/\s+/g, ' ').trim().toLowerCase();
-		const words = sanitizedQuery.split(' ').filter(word => word);
-		const simplifiedWords = sanitizedQuery.replace(common.SIMPLIFY_REGEXP, '').split(' ').filter(word => word);
-
-		const regexpPieces = [$tw.utils.escapeRegExp(sanitizedQuery)];
-		regexpPieces.push(...words.map(word => $tw.utils.escapeRegExp(word)));
-		regexpPieces.push(...simplifiedWords.map(word => $tw.utils.escapeRegExp(word)));
-
-		const fullRegexp = new RegExp('(' + regexpPieces.join("|").replace(/ /g, '\\s+') + ')', 'gi');
+		const fullRegexp = prepareFullRegexp(query);
 		const titles = [];
 
 		source(function (tiddler, title) {
@@ -43,15 +36,43 @@ Smart sorting of search results
 	function mark(title, fullRegexp, options) {
 		switch (options.mode) {
 			case 'default':
-				return title.replace(fullRegexp, '<mark>$1</mark>');
+				return doFullRegexpReplace(title, fullRegexp, options.template);
 
 			case 'raw-strip':
+				return doFullRegexpReplace(rawStrip(title), fullRegexp, options.template);
+
 			case 'wikify-strip':
-				const text = wikify(title, options.wiki, false).textContent;
-				return text.replace(fullRegexp, '<mark>$1</mark>');
+				return doFullRegexpReplace(
+					wikify(title, options.wiki, false).textContent,
+					fullRegexp,
+					options.template
+				);
 
 			case 'wikify-safe':
+				return wikifySafe(title, fullRegexp, options, false);
 		}
+	}
+
+	function doFullRegexpReplace(title, fullRegexp, template) {
+		return fullRegexp
+			? title.replace(fullRegexp, template)
+			: title;
+	}
+
+	function prepareFullRegexp(query) {
+		const sanitizedQuery = query.replace(/\s+/g, ' ').trim().toLowerCase();
+		const words = sanitizedQuery.split(' ').filter(word => word);
+		const simplifiedWords = sanitizedQuery.replace(common.SIMPLIFY_REGEXP, '').split(' ').filter(word => word);
+
+		if (sanitizedQuery === '') {
+			return null;
+		}
+
+		const regexpPieces = [$tw.utils.escapeRegExp(sanitizedQuery)];
+		regexpPieces.push(...words.map(word => $tw.utils.escapeRegExp(word)));
+		regexpPieces.push(...simplifiedWords.map(word => $tw.utils.escapeRegExp(word)));
+
+		return new RegExp('(' + regexpPieces.join("|").replace(/ /g, '\\s+') + ')', 'gi');
 	}
 
 	function wikify(text, wiki, isInline) {
@@ -66,11 +87,8 @@ Smart sorting of search results
 		return container;
 	}
 
-	function prepareField(field, options) {
-		if (options.textOnly) {
-			return common.TEXT_ONLY_REGEXPS.reduce((field, [regexp, replace]) => field.replace(regexp, replace), field);
-		}
-		return field;
+	function rawStrip(field) {
+		return common.TEXT_ONLY_REGEXPS.reduce((field, [regexp, replace]) => field.replace(regexp, replace), field);
 	}
 
 	function extractMode(optionFlags) {
@@ -80,6 +98,21 @@ Smart sorting of search results
 			case 'wikify-safe': return 'wikify-safe';
 			default: return 'default';
 		}
+	}
+
+	function wikifySafe(text, fullRegexp, options, isInline) {
+		const wikifiedText = wikify(text, options.wiki, isInline).innerHTML;
+		const tokens = [];
+
+		const protectedText = wikifiedText.replace(/<[^>]+>/g, function(token) {
+			tokens.push(token);
+			return "\u001D";
+		});
+		const replacedText = doFullRegexpReplace(protectedText, fullRegexp, options.template);
+
+		return replacedText.replace(/\u001D/g, function() {
+			return tokens.shift();
+		});
 	}
 
 })(typeof global !== 'undefined' ? global.testRequire : require);

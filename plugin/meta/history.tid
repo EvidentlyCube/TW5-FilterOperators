@@ -1,4 +1,4 @@
 title: $:/plugins/EvidentlyCube/ExtraOperators/history
 type: text/vnd.tiddlywiki
 
-* ''1.0.0'' -- Added `searchsort` filter operator
+* ''1.0.0'' -- Initial release

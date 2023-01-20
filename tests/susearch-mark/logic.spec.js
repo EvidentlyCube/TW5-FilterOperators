@@ -1,7 +1,6 @@
 /* cSpell:disable */
 
-const assert = require('assert');
-const { runComplexCase, runSearch, assertResults } = require('./helpers').helpers;
+const { runComplexCase } = require('./helpers').helpers;
 
 describe('susearch-mark simple cases', () => {
 	it('Mark full phrase', () => {

@@ -145,6 +145,9 @@ describe('susearch special cases', () => {
 		const results = runSearch([], '', 'title');
 		assert.deepStrictEqual(results, []);
 	});
+	it("Empty query gives back all results", () => {
+		runComplexCase('', ['test'], [], ['raw-strip']);
+	});
 	it("Missing field is treated as no value", () => {
 		const results = runSearch(toTiddlers(['c', 'b']), 'test', 'missing field');
 		assertResults(results, []);

@@ -44,10 +44,27 @@ describe('focus-on regexp options', () => {
 	it('regexp', () => {
 		runComplexCase(['[ADE]{3}', 3, 5], REGEXP_TEXT, `...:::ADE::...`, ['regexp']);
 	});
+	it('When regexp is invalid start from the beginning', () => {
+		runComplexCase(['(', 3, 5], REGEXP_TEXT, `:::::...`, ['regexp']);
+	});
 	it('case-sensitive regexp', () => {
 		runComplexCase(['[ab]{2}', 3, 5], REGEXP_TEXT, `...:::abcde...`, ['regexp', 'casesensitive']);
 	});
 	it('Default to case-insensitive regexp', () => {
 		runComplexCase(['[ab]{2}', 3, 5], REGEXP_TEXT, `...:::ABF::...`, ['regexp']);
+	});
+});
+describe('focus-on edge casess', () => {
+	it('When the search match is empty, start from the beginning ', () => {
+		runComplexCase('', RAW_CASE, RAW_CASE.substring(0, 128) + "...");
+	});
+	it('When the search match and input is empty, return empty', () => {
+		runComplexCase('', '', '');
+	});
+	it('When the search match finds nothing, focus on the first character', () => {
+		runComplexCase('ABCDE', RAW_CASE, RAW_CASE.substring(0, 128) + "...");
+	});
+	it('Support empty ellipsis', () => {
+		runComplexCase(['MATCH', 5, 5, ''], RAW_CASE, ":::::MATCH");
 	});
 });

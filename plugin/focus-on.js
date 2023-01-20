@@ -3,7 +3,7 @@ title: $:/plugins/EvidentlyCube/ExtraOperators/focus-on.js
 type: application/javascript
 module-type: filteroperator
 
-Smart sorting of search results
+Extract part of text focusing on the first occurrence
 
 \*/
 (function (require) {
@@ -11,12 +11,10 @@ Smart sorting of search results
 	/*global $tw: false */
 	"use strict";
 
-	const common = require('$:/plugins/EvidentlyCube/ExtraOperators/common.js');
-
 	exports['focus-on'] = function (source, operator, opts) {
 		const operands = operator.operands || [];
 		const suffixes = (operator.suffixes || []);
-		const flags = suffixes[0];
+		const flags = suffixes[0] || [];
 		const options = {
 			match: operands[0] || '',
 			prefixLength: extractInteger(operands[1], 20),
@@ -50,7 +48,12 @@ Smart sorting of search results
 
 	function getFirstMatchIndex(title, match, options) {
 		if (options.isRegexp) {
-			return Math.max(0, title.search(new RegExp(match, options.isCaseSensitive ? '' : 'i')));
+			try {
+				return Math.max(0, title.search(new RegExp(match, options.isCaseSensitive ? '' : 'i')));
+			} catch (e) {
+				// Handle invalid regular expressions
+				return 0;
+			}
 		}
 
 		if (!options.isCaseSensitive) {

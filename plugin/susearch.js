@@ -3,7 +3,7 @@ title: $:/plugins/EvidentlyCube/ExtraOperators/susearch.js
 type: application/javascript
 module-type: filteroperator
 
-Smart sorting of search results
+Smart search
 
 \*/
 (function(require){

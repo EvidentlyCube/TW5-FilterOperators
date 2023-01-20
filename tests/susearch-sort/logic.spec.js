@@ -60,36 +60,36 @@ describe('Multi word', () => {
 		runComplexCase("'foo'$# @#@&bar)", ['foo bar is the best baz', 'aaa', 'zzz']);
 	});
 });
-describe('susearch-sort text-only flag', () => {
+describe('susearch-sort raw-strip flag', () => {
 	describe('HTML Tags -> Include by default', () => {
 		runComplexCase('test', ['Z <a href="test">', 'A']);
 	});
-	describe('HTML Tags -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['A', 'Z <a href="test">'], ['text-only']);
+	describe('HTML Tags -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['A', 'Z <a href="test">'], ['raw-strip']);
 	});
 	describe('Macro invocations -> Include by default', () => {
 		runComplexCase('test', ['Z <<test>>', 'A']);
 	});
-	describe('Macro Invocations -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['A', 'Z <<test>>'], ['text-only']);
+	describe('Macro Invocations -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['A', 'Z <<test>>'], ['raw-strip']);
 	});
 	describe('Filter invocations -> Include by default', () => {
 		runComplexCase('test', ['Z {{{test}}}', 'A']);
 	});
-	describe('Filter Invocations -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['A', 'Z {{{test}}}'], ['text-only']);
+	describe('Filter Invocations -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['A', 'Z {{{test}}}'], ['raw-strip']);
 	});
 	describe('Transclusions -> Include by default', () => {
 		runComplexCase('test', ['Z {{test}}', 'A']);
 	});
-	describe('Transclusions -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['A', 'Z {{test}}'], ['text-only']);
+	describe('Transclusions -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['A', 'Z {{test}}'], ['raw-strip']);
 	});
 	describe('Images -> Include by default', () => {
 		runComplexCase('test', ['Z [img class="test" [test.jpg]]', 'A']);
 	});
-	describe('Images -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['A', 'Z [img class="test" [test.jpg]]'], ['text-only']);
+	describe('Images -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['A', 'Z [img class="test" [test.jpg]]'], ['raw-strip']);
 	});
 	const MACRO_DEF_MULTILINE_N = "\\define a(a b c)\ntest\n\\end\nB";
 	const MACRO_DEF_MULTILINE_RN = "\\define bbb(a b c)\r\ntest\r\n\\end\r\nC";
@@ -102,37 +102,37 @@ describe('susearch-sort text-only flag', () => {
 			"\nA"
 		]);
 	});
-	describe('Macro Definitions -> Exclude in `text-only`', () => {
+	describe('Macro Definitions -> Exclude in `raw-strip`', () => {
 		runComplexCase('test', [
 			"\nA",
 			MACRO_DEF_MULTILINE_N,
 			MACRO_DEF_MULTILINE_RN,
 			MACRO_DEF_SINGLELINE
-		], ['text-only']);
+		], ['raw-strip']);
 	});
 	describe('Arbitrary Pragmas at the start -> Include by default', () => {
 		runComplexCase('test', ["\\test\r\nb", "\\bb test\r\nb", 'A']);
 	});
-	describe('Arbitrary Pragmas at the start -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['A', "\\bb test\r\nb", "\\test\r\nb"], ['text-only']);
+	describe('Arbitrary Pragmas at the start -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['A', "\\bb test\r\nb", "\\test\r\nb"], ['raw-strip']);
 	});
 	describe('Styles -> Include by default', () => {
 		runComplexCase('test', ["@@.test\nb", 'A']);
 	});
-	describe('Styles -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['A', "@@.test\nb"], ['text-only']);
+	describe('Styles -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['A', "@@.test\nb"], ['raw-strip']);
 	});
 	describe('Typed blocks -> Include by default', () => {
 		runComplexCase('test', ["$$$application/test\nb", 'A']);
 	});
-	describe('Typed blocks -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['A', "$$$application/test\nb"], ['text-only']);
+	describe('Typed blocks -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['A', "$$$application/test\nb"], ['raw-strip']);
 	});
 	describe('Manual link target -> Include by default', () => {
 		runComplexCase('test', ['[[test|else]]', "[[Content|test]] b", 'A']);
 	});
-	describe('Manual link target -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['[[test|else]]', 'A', "[[Content|test]] b"], ['text-only']);
+	describe('Manual link target -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['[[test|else]]', 'A', "[[Content|test]] b"], ['raw-strip']);
 	});
 	const ALL_IN_ONE = `\\test
 \\whitespace test
@@ -159,8 +159,8 @@ $$$
 	describe('Big check -> Include by default', () => {
 		runComplexCase('test', [ALL_IN_ONE, VERY_LATE_TEST]);
 	});
-	describe('Typed blocks -> Exclude in `text-only`', () => {
-		runComplexCase('test', [VERY_LATE_TEST, ALL_IN_ONE], ['text-only']);
+	describe('Typed blocks -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', [VERY_LATE_TEST, ALL_IN_ONE], ['raw-strip']);
 	});
 });
 describe('susearch-sort special cases', () => {

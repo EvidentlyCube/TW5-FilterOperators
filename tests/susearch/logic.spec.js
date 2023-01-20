@@ -28,7 +28,7 @@ describe('susearch simple cases', () => {
 		runComplexCase('TEST', ['test', 'TesT', 'TEST'], ['soup']);
 	});
 });
-describe('susearch text-only flag', () => {
+describe('susearch raw-strip flag', () => {
 	const mashup = (text, prefix="a", suffix="b") => {
 		const prefixes = ['', "\n", "\r\n", `${prefix}\n`, `${prefix}\r\n`];
 		const suffixes = ['', "\n", "\r\n", `\n${suffix}`, `\r\n${suffix}`];
@@ -40,32 +40,32 @@ describe('susearch text-only flag', () => {
 	describe('HTML Tags -> Include by default', () => {
 		runComplexCase('test', ['test', ...mashup('<a href="test">')], []);
 	});
-	describe('HTML Tags -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['test'], mashup('<a href="test">'), ['text-only']);
+	describe('HTML Tags -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['test'], mashup('<a href="test">'), ['raw-strip']);
 	});
 	describe('Macro invocations -> Include by default', () => {
 		runComplexCase('test', ['test', ...mashup('<<test>>')], []);
 	});
-	describe('Macro Invocations -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['test'], mashup('<<test>>'), ['text-only']);
+	describe('Macro Invocations -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['test'], mashup('<<test>>'), ['raw-strip']);
 	});
 	describe('Filter invocations -> Include by default', () => {
 		runComplexCase('test', ['test', ...mashup('{{{test}}}')], []);
 	});
-	describe('Filter Invocations -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['test'], mashup('{{{test}}}'), ['text-only']);
+	describe('Filter Invocations -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['test'], mashup('{{{test}}}'), ['raw-strip']);
 	});
 	describe('Transclusions -> Include by default', () => {
 		runComplexCase('test', ['test', ...mashup('{{test}}')], []);
 	});
-	describe('Transclusions -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['test'], mashup('{{test}}'), ['text-only']);
+	describe('Transclusions -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['test'], mashup('{{test}}'), ['raw-strip']);
 	});
 	describe('Images -> Include by default', () => {
 		runComplexCase('test', ['test', ...mashup('[img class="test" [test.jpg]]')], []);
 	});
-	describe('Images -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['test'], mashup('[img class="test" [test.jpg]]'), ['text-only']);
+	describe('Images -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['test'], mashup('[img class="test" [test.jpg]]'), ['raw-strip']);
 	});
 	const MACRO_DEF_MULTILINE_N = "\\define a(a b c)\ntest\n\\end";
 	const MACRO_DEF_MULTILINE_RN = "\\define bbb(a b c)\r\ntest\r\n\\end";
@@ -78,37 +78,37 @@ describe('susearch text-only flag', () => {
 			"test"
 		]);
 	});
-	describe('Macro Definitions -> Exclude in `text-only`', () => {
+	describe('Macro Definitions -> Exclude in `raw-strip`', () => {
 		runComplexCase('test',
 			['test'], [
 				...mashup(MACRO_DEF_MULTILINE_N),
 				...mashup(MACRO_DEF_MULTILINE_RN),
 				...mashup(MACRO_DEF_SINGLELINE1),
-		], ['text-only']);
+		], ['raw-strip']);
 	});
 	describe('Arbitrary Pragmas at the start -> Include by default', () => {
 		runComplexCase('test', ['test', ...mashup("\\test", "\n  \r\n")], []);
 	});
-	describe('Arbitrary Pragmas at the start -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['test'], mashup("\\test", "\n  \r\n"), ['text-only']);
+	describe('Arbitrary Pragmas at the start -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['test'], mashup("\\test", "\n  \r\n"), ['raw-strip']);
 	});
 	describe('Styles -> Include by default', () => {
 		runComplexCase('test', ['test', ...mashup("@@.test")], []);
 	});
-	describe('Styles -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['test'], mashup("@@.test"), ['text-only']);
+	describe('Styles -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['test'], mashup("@@.test"), ['raw-strip']);
 	});
 	describe('Typed blocks -> Include by default', () => {
 		runComplexCase('test', ["test",...mashup("$$$application/test")]);
 	});
-	describe('Typed blocks -> Exclude in `text-only`', () => {
-		runComplexCase('test', ["test"], mashup("$$$application/test"), ['text-only']);
+	describe('Typed blocks -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ["test"], mashup("$$$application/test"), ['raw-strip']);
 	});
 	describe('Manual link target -> Include by default', () => {
 		runComplexCase('test', [...mashup('[[test|else]]'), ...mashup("[[Content|test]]")], []);
 	});
-	describe('Manual link target -> Exclude in `text-only`', () => {
-		runComplexCase('test', mashup('[[test|else]]'), mashup("[[Content|test]] b"), ['text-only']);
+	describe('Manual link target -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', mashup('[[test|else]]'), mashup("[[Content|test]] b"), ['raw-strip']);
 	});
 	const ALL_IN_ONE = `\\test
 \\whitespace test
@@ -134,8 +134,8 @@ $$$
 	describe('Big check -> Include by default', () => {
 		runComplexCase('test', ['test', ALL_IN_ONE]);
 	});
-	describe('Typed blocks -> Exclude in `text-only`', () => {
-		runComplexCase('test', ['test'], [ALL_IN_ONE], ['text-only']);
+	describe('Typed blocks -> Exclude in `raw-strip`', () => {
+		runComplexCase('test', ['test'], [ALL_IN_ONE], ['raw-strip']);
 	});
 });
 describe('susearch special cases', () => {

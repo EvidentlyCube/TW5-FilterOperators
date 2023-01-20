@@ -1,12 +1,12 @@
 const assert = require('assert');
-const filter = require('../../plugin/susearch-mark')['susearch-mark'];
+const filter = require('../../plugin/focus-on')['focus-on'];
 
 const helpers = {
 	runComplexCase(operands, given, then, options, message) {
 		given = !Array.isArray(given) ? [given] : given;
 		then = !Array.isArray(then) ? [then] : then;
 
-		const result = helpers.runMark(
+		const result = helpers.runFocusOn(
 			given.map(title => ({fields: {title}})),
 			operands,
 			options
@@ -15,7 +15,7 @@ const helpers = {
 		helpers.assertResults(result, then, message);
 	},
 
-	runMark(tiddlers, operands, options) {
+	runFocusOn(tiddlers, operands, options) {
 		options = options || [];
 		operands = Array.isArray(operands) ? operands : [operands];
 

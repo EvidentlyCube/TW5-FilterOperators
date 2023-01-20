@@ -20,7 +20,7 @@ Smart sorting of search results
 		const optionFlags = suffixes[1] || [];
 		const options = {
 			field: (suffixes[0] || [])[0] || 'title',
-			textOnly: optionFlags.indexOf('text-only') !== -1
+			textOnly: optionFlags.indexOf('raw-strip') !== -1
 		};
 
 		const sanitizedQuery = query.replace(/\s+/g, ' ').trim().toLowerCase();

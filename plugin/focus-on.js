@@ -43,7 +43,7 @@ Extract part of text focusing on the first occurrence
 
 		return (startIndex > 0 ? options.ellipsis : '')
 			+ title.substring(startIndex, endIndex)
-			+ (endIndex < title.length - 1 ? options.ellipsis : '');
+			+ (endIndex < title.length ? options.ellipsis : '');
 	}
 
 	function getFirstMatchIndex(title, match, options) {
@@ -85,7 +85,7 @@ Extract part of text focusing on the first occurrence
 	}
 
 	function getEndIndex(title, matchIndex, options) {
-		const baseIndex = Math.min(title.length -1, matchIndex + options.focusLength);;
+		const baseIndex = Math.min(title.length, matchIndex + options.focusLength);;
 		if (options.htmlMode === 'ignore-html') {
 			return baseIndex;
 		}

@@ -67,4 +67,13 @@ describe('focus-on edge casess', () => {
 	it('Support empty ellipsis', () => {
 		runComplexCase(['MATCH', 5, 5, ''], RAW_CASE, ":::::MATCH");
 	});
+	it('Zero lengths return nothing with ellipses', () => {
+		runComplexCase(['MATCH', 0, 0], RAW_CASE, "......");
+	});
+	it('If there is at least one character cut then ellipsis is added', () => {
+		runComplexCase(['B', 1, 2], 'AABCC', "...ABC...");
+	});
+	it('if the whole text should be displayed then display all of it without ellipses', () => {
+		runComplexCase(['B'], 'AABCC', "AABCC");
+	});
 });

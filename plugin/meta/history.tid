@@ -1,4 +1,5 @@
 title: $:/plugins/EvidentlyCube/ExtraOperators/history
 type: text/vnd.tiddlywiki
 
+* ''1.0.1'' -- `focus-on` fixed a bug where last character would not be displayed if the whole text was supposed to be visible
 * ''1.0.0'' -- Initial release

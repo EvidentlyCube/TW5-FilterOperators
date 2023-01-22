@@ -156,4 +156,7 @@ describe('susearch special cases', () => {
 		const results = runSearch(toTiddlers(['c', 'b']), '', 'missing field');
 		assertResults(results, ['c', 'b']);
 	});
+	describe("Spaces are respected", () => {
+		runComplexCase('sand', ['sand', 'sandwich', 'thousand'], ['this and that'], ['raw-strip']);
+	});
 });

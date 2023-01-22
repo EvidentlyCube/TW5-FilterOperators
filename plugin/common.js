@@ -26,7 +26,7 @@ Smart sorting of search results
 		[/''|`|__|\/\/|^!+\s+|~~/mg, '']
 	];
 
-	exports.SIMPLIFY_REGEXP = /[^a-z0-9_-]/ig;
+	exports.SIMPLIFY_REGEXP = /[^ a-z0-9_-]/ig;
 
 	exports.getRegexpsForPhrase = function(phrase) {
 		const escapedPhrase = $tw.utils.escapeRegExp(phrase);

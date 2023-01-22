@@ -28,6 +28,32 @@ describe('susearch simple cases', () => {
 		runComplexCase('TEST', ['test', 'TesT', 'TEST'], ['soup']);
 	});
 });
+describe('susearch strict flag', () => {
+	describe('Only include results where every word has a match', () => {
+		runComplexCase(
+			'this iss sparta',
+			['this iss sparta', 'sparta iss not this city', "we don't talk about sparta, this iss it"],
+			['this is sparta', 'this sparta', 'now ur just joking'],
+			['strict']
+		)
+	});
+	describe('Only include results where every word has a match (simplified text)', () => {
+		runComplexCase(
+			'cas$ mone$ iiii$ @mazing',
+			['cas mone iiii mazing', 'cas$ mone$ iiii$ mazing', "cash money iiiis amazing"],
+			['cas mon3 iiii mazing'],
+			['strict']
+		)
+	});
+	describe('Only include results where every word has a match (mix of normal and simplified text)', () => {
+		runComplexCase(
+			"can't t'is",
+			["can't t'is", "cant tis", "can't tis", "cant t'is"],
+			['nope'],
+			['strict']
+		)
+	});
+});
 describe('susearch raw-strip flag', () => {
 	const mashup = (text, prefix="a", suffix="b") => {
 		const prefixes = ['', "\n", "\r\n", `${prefix}\n`, `${prefix}\r\n`];

@@ -20,7 +20,8 @@ Smart search
 		const optionFlags = suffixes[1] || [];
 		const options = {
 			field: (suffixes[0] || [])[0] || 'title',
-			textOnly: optionFlags.indexOf('raw-strip') !== -1
+			textOnly: optionFlags.indexOf('raw-strip') !== -1,
+			strict: optionFlags.indexOf('strict') !== -1,
 		};
 
 		const sanitizedQuery = query.replace(/\s+/g, ' ').trim().toLowerCase();
@@ -46,15 +47,33 @@ Smart search
 			return true;
 		}
 
+		let wordCount = 0;
 		for (const word of words) {
+			console.log(word);
 			if (field.indexOf(word) !== -1) {
-				return true;
+				wordCount++;
+
+				if (!options.strict || wordCount === words.length) {
+					return true;
+				}
+
+			} else if (options.strict) {
+				break;
 			}
 		}
 
+		wordCount = 0;
 		for (const word of simplifiedWords) {
+			console.log(word);
 			if (simplifiedField.indexOf(word) !== -1) {
-				return true;
+				wordCount++;
+
+				if (!options.strict || wordCount === words.length) {
+					return true;
+				}
+
+			} else if (options.strict) {
+				break;
 			}
 		}
 

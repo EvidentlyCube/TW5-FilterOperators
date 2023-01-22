@@ -49,7 +49,6 @@ Smart search
 
 		let wordCount = 0;
 		for (const word of words) {
-			console.log(word);
 			if (field.indexOf(word) !== -1) {
 				wordCount++;
 
@@ -64,7 +63,6 @@ Smart search
 
 		wordCount = 0;
 		for (const word of simplifiedWords) {
-			console.log(word);
 			if (simplifiedField.indexOf(word) !== -1) {
 				wordCount++;
 

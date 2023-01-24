@@ -28,13 +28,13 @@ describe('susearch simple cases', () => {
 		runComplexCase('TEST', ['test', 'TesT', 'TEST'], ['soup']);
 	});
 });
-describe('susearch strict flag', () => {
+describe('susearch all-words flag', () => {
 	describe('Only include results where every word has a match', () => {
 		runComplexCase(
 			'this iss sparta',
 			['this iss sparta', 'sparta iss not this city', "we don't talk about sparta, this iss it"],
 			['this is sparta', 'this sparta', 'now ur just joking'],
-			['strict']
+			['all-words']
 		)
 	});
 	describe('Only include results where every word has a match (simplified text)', () => {
@@ -42,7 +42,7 @@ describe('susearch strict flag', () => {
 			'cas$ mone$ iiii$ @mazing',
 			['cas mone iiii mazing', 'cas$ mone$ iiii$ mazing', "cash money iiiis amazing"],
 			['cas mon3 iiii mazing'],
-			['strict']
+			['all-words']
 		)
 	});
 	describe('Only include results where every word has a match (mix of normal and simplified text)', () => {
@@ -50,7 +50,7 @@ describe('susearch strict flag', () => {
 			"can't t'is",
 			["can't t'is", "cant tis", "can't tis", "cant t'is"],
 			['nope'],
-			['strict']
+			['all-words']
 		)
 	});
 });

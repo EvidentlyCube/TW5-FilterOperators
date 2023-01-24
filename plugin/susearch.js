@@ -21,7 +21,7 @@ Smart search
 		const options = {
 			field: (suffixes[0] || [])[0] || 'title',
 			textOnly: optionFlags.indexOf('raw-strip') !== -1,
-			strict: optionFlags.indexOf('strict') !== -1,
+			allWords: optionFlags.indexOf('all-words') !== -1,
 		};
 
 		const sanitizedQuery = query.replace(/\s+/g, ' ').trim().toLowerCase();
@@ -52,11 +52,11 @@ Smart search
 			if (field.indexOf(word) !== -1) {
 				wordCount++;
 
-				if (!options.strict || wordCount === words.length) {
+				if (!options.allWords || wordCount === words.length) {
 					return true;
 				}
 
-			} else if (options.strict) {
+			} else if (options.allWords) {
 				break;
 			}
 		}
@@ -66,11 +66,11 @@ Smart search
 			if (simplifiedField.indexOf(word) !== -1) {
 				wordCount++;
 
-				if (!options.strict || wordCount === words.length) {
+				if (!options.allWords || wordCount === words.length) {
 					return true;
 				}
 
-			} else if (options.strict) {
+			} else if (options.allWords) {
 				break;
 			}
 		}

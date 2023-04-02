@@ -1,7 +1,7 @@
 /*\
 title: $:/plugins/EvidentlyCube/ExtraOperators/common.js
 type: application/javascript
-module-type: filteroperator
+module-type: library
 
 Smart sorting of search results
 

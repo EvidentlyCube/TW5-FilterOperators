@@ -9,17 +9,17 @@ describe('susearch simple cases', () => {
 	describe('Match full phrase', () => {
 		runComplexCase('much testing', ['much testing', 'this is much testing result'], ['soup']);
 	});
-	describe('Match individual words', () => {
-		runComplexCase('much testing', ['much', 'testing', 'testing is too much'], ['soup']);
+	describe('Match all words in any order', () => {
+		runComplexCase('much testing', ['much testing', 'testing much', 'testing is too much'], ['much', 'testing', 'soup']);
 	});
 	describe('Match words partially', () => {
-		runComplexCase('much testing', ['mucho', 'atesting', 'atestingo is too amucho'], ['soup']);
+		runComplexCase('much testing', ['mucho atesting', 'atestingo amucho'], ['soup']);
 	});
-	describe('Match words with special characters', () => {
-		runComplexCase('$econd$', ['$econd$', 'I have a few $econd$ to spare'], ['soup']);
+	describe('Match words with special characters and stripping them (query with special chars)', () => {
+		runComplexCase("can't it's", ["can't it's", 'cant its', "can't its", "cant it's"], ['soup']);
 	});
-	describe('Match words while trimming special characters', () => {
-		runComplexCase('$econd$', ['econd', '@econd@'], ['soup']);
+	describe('Match words with special characters and stripping them (query without special chars)', () => {
+		runComplexCase("cant its", ["can't it's", 'cant its', "can't its", "cant it's"], ['soup']);
 	});
 	describe('Only special characters will also match', () => {
 		runComplexCase('$#@', ['$#@', '$#@@#$'], ['$@#']);
@@ -28,32 +28,29 @@ describe('susearch simple cases', () => {
 		runComplexCase('TEST', ['test', 'TesT', 'TEST'], ['soup']);
 	});
 });
-describe('susearch all-words flag', () => {
-	describe('Only include results where every word has a match', () => {
+describe('susearch invert will return non-matching results', () => {
+	runComplexCase('Test', ['soup'], ['test'], [], '!');
+});
+describe('susearch some-words flag', () => {
+	describe('Include results even if only one word matches', () => {
 		runComplexCase(
 			'this iss sparta',
-			['this iss sparta', 'sparta iss not this city', "we don't talk about sparta, this iss it"],
-			['this is sparta', 'this sparta', 'now ur just joking'],
-			['all-words']
-		)
-	});
-	describe('Only include results where every word has a match (simplified text)', () => {
-		runComplexCase(
-			'cas$ mone$ iiii$ @mazing',
-			['cas mone iiii mazing', 'cas$ mone$ iiii$ mazing', "cash money iiiis amazing"],
-			['cas mon3 iiii mazing'],
-			['all-words']
-		)
-	});
-	describe('Only include results where every word has a match (mix of normal and simplified text)', () => {
-		runComplexCase(
-			"can't t'is",
-			["can't t'is", "cant tis", "can't tis", "cant t'is"],
-			['nope'],
-			['all-words']
+			['this', 'sparta', "iss"],
+			['soup'],
+			['some-words']
 		)
 	});
 });
+describe('susearch ordered flag', () => {
+	describe('Include results only if the words are matched in the same order', () => {
+		runComplexCase(
+			'duck prince',
+			['duck prince', 'duck is prince', 'a prince duck duck is the best prince duck'],
+			['prince duck', 'duprinceck'],
+			['ordered']
+		)
+	})
+})
 describe('susearch raw-strip flag', () => {
 	const mashup = (text, prefix="a", suffix="b") => {
 		const prefixes = ['', "\n", "\r\n", `${prefix}\n`, `${prefix}\r\n`];

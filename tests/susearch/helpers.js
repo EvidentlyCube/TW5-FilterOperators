@@ -4,7 +4,7 @@ const filter = require('../../plugin/susearch')['susearch'];
 const toTitle = (text, index) => `ID:${index} -- ${text}`;
 const toTiddler = (title, text) => ({fields: {title, text}});
 const helpers = {
-	runComplexCase(query, expectedTitles, notExpectedTitles, options) {
+	runComplexCase(query, expectedTitles, notExpectedTitles, options, prefix) {
 		const all = expectedTitles.concat(notExpectedTitles);
 		it("Title field", () => {
 			runCase(
@@ -12,7 +12,8 @@ const helpers = {
 				'title',
 				all.map(title => toTiddler(title)),
 				expectedTitles,
-				options
+				options,
+				prefix
 			);
 		});
 		it("Text field", () => {
@@ -21,12 +22,13 @@ const helpers = {
 				'text',
 				all.map((title, index) => toTiddler(toTitle(title, index), title)),
 				expectedTitles.map(toTitle),
-				options
+				options,
+				prefix
 			);
 		});
 	},
 
-	runSearch(tiddlers, query, searchField, options) {
+	runSearch(tiddlers, query, searchField, options, prefix) {
 		return filter(
 			callback =>{
 				for (const tiddler of tiddlers) {
@@ -38,7 +40,8 @@ const helpers = {
 				suffixes: [
 					[searchField],
 					options || []
-				]
+				],
+				prefix: prefix || ''
 			}
 		);
 	},
@@ -48,8 +51,8 @@ const helpers = {
 	}
 }
 
-function runCase(query, field, testData, expectedTitles, options) {
-	const result = helpers.runSearch(testData, query, field, options);
+function runCase(query, field, testData, expectedTitles, options, prefix) {
+	const result = helpers.runSearch(testData, query, field, options, prefix);
 
 	helpers.assertResults(result, expectedTitles);
 }

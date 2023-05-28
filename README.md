@@ -1,5 +1,7 @@
 # Extra Operators [TiddlyWiki5 Plugin]
 
+> :warning: **This repository has been moved**: To make development easier this plugin's code was moved to [EvidentlyCube/TW5-PluginShowcase](https://github.com/EvidentlyCube/TW5-PluginShowcase/tree/main), specifically [here](https://github.com/EvidentlyCube/TW5-PluginShowcase/tree/main/plugins/EvidentlyCube/TW5-ExtraFilters) .
+
 A collection of awesome filter operators to TW5. Currently available are:
 
 * `focus-on` -- Find specific text and its context and remove everything else.
